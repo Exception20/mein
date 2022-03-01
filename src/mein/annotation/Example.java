@@ -58,7 +58,7 @@ public class Example
     
     
 
-    public static void main(String[] args) throws Exception {
+    public static void mains(String[] args) throws Exception {
         Example instance = new Example("Hello Annotation");
         Method getValue = getter(Example.class, "value");
         if (getValue != null)
