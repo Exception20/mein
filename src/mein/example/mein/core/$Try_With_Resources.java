@@ -1,5 +1,6 @@
 package mein.example.mein.core;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -22,6 +23,11 @@ public class $Try_With_Resources
         }
 
         @Override
+        public int available() {
+            return src.length - index;
+        }
+
+        @Override
         public int read() throws IOException {
             if (throwException)
                 throw new IOException();
@@ -35,9 +41,12 @@ public class $Try_With_Resources
 
         @Override
         public int read(byte[] b, int off, int len) throws IOException {
-            if (throwException) throw new IOException();
+            int available;
             
-            len = Math.min(len, src.length-index);
+            if (throwException) throw new IOException();
+            if ((available = available()) == 0) return -1;
+            
+            len = Math.min(len, available);
             System.arraycopy(src, index, b, off, len);
             index += len;
             return len;
@@ -57,10 +66,10 @@ public class $Try_With_Resources
 
     public static void main(String[] args) {
         TestResourceInputStream in = new TestResourceInputStream(
-            "1145141919810 やりますね".getBytes(),
-            false // if true, the read() method throws an IOException
+            "1145141919810".getBytes(),
+            true // if true, the read() method throws an IOException
         );
-        OutputStream out = null; // NullPointerException
+        OutputStream out = new ByteArrayOutputStream();
         try {
             new $Try_With_Resources().example(in, out);
         } catch (Exception e) {

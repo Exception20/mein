@@ -7,7 +7,7 @@ import java.util.function.Consumer;
 
 /* 
  * Created on 2022-03-04
- * last modified  2022-03-13  13:37  GMT+8
+ * last modified  2022-03-14  08:36:37  GMT+8
  * @author Exception20
  */
 
@@ -148,7 +148,9 @@ public class Try_With_Resources
         if (ex instanceof Error)
             throw (Error) ex;
         
-        throw new RuntimeException(ex);
+        ex = new RuntimeException("Uncaught Exception", ex);
+        ex.setStackTrace(new StackTraceElement[0]);
+        throw (RuntimeException) ex;
     }
 
 
