@@ -5,9 +5,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 
+import mein.util.Exceptions;
+
 /* 
  * Created on 2022-03-04
- * last modified  2022-03-14  08:36:37  GMT+8
+ * last modified  2022-04-19  22:42  GMT+8
  * @author Exception20
  */
 
@@ -95,15 +97,6 @@ public class Try_With_Resources
     }
 
 
-    public Runnable toRunnable() {
-        return new Runnable() {
-            @Override public void run() {
-                Try_With_Resources.this.run();
-            }
-        };
-    }
-
-
     public void run() {
         try {
             run_try();
@@ -148,9 +141,7 @@ public class Try_With_Resources
         if (ex instanceof Error)
             throw (Error) ex;
         
-        ex = new RuntimeException("Uncaught Exception", ex);
-        ex.setStackTrace(new StackTraceElement[0]);
-        throw (RuntimeException) ex;
+        throw Exceptions.wrap("Uncaught Exception", ex);
     }
 
 
