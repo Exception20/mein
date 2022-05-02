@@ -1,86 +1,84 @@
 package mein.io;
 
 import java.io.*;
+import java.nio.file.Files;
+
+/* 
+ * 2022-05-02  09:55  GMT+8
+ */
 
 public class FileIO
 {
-    public static class Input extends FileInputStream
+    static void exceptionClose(Closeable c, IOException e) {
+        try {
+            c.close();
+        } catch (Throwable t) {
+            e.addSuppressed(t);
+        }
+    }
+
+
+    public static class Input extends FilterInputStream
     {
-        public Input(String name) throws FileNotFoundException {
-            super(name);
+        public Input(InputStream in) {
+            super(in);
         }
-        
-        public Input(File file) throws FileNotFoundException {
-            super(file);
-        }
-        
-        public Input(FileDescriptor fdObj) {
-            super(fdObj);
-        }
-        
-        
-        private void exceptionClose(Throwable e) {
-            try {
-                super.close();
-            } catch (Throwable ex) {
-                e.addSuppressed(ex);
-            }
-        }
-        
+
+
         @Override
         public int read() throws UncheckedIOException {
             try {
-                return super.read();
+                return in.read();
             } catch (IOException e) {
-                exceptionClose(e);
+                exceptionClose(in, e);
                 throw new UncheckedIOException(e);
             }
         }
-        
+
         @Override
         public int read(byte[] b) throws UncheckedIOException {
             try {
-                return super.read(b);
+                return in.read(b);
             } catch (IOException e) {
-                exceptionClose(e);
+                exceptionClose(in, e);
                 throw new UncheckedIOException(e);
             }
         }
-        
+
         @Override
         public int read(byte[] b, int off, int len) throws UncheckedIOException {
             try {
-                return super.read(b, off, len);
+                return in.read(b, off, len);
             } catch (IOException e) {
-                exceptionClose(e);
+                exceptionClose(in, e);
                 throw new UncheckedIOException(e);
             }
         }
-        
+
         @Override
         public long skip(long n) throws UncheckedIOException {
             try {
-                return super.skip(n);
+                return in.skip(n);
             } catch (IOException e) {
-                exceptionClose(e);
+                exceptionClose(in, e);
                 throw new UncheckedIOException(e);
             }
         }
-        
+
         @Override
         public int available() throws UncheckedIOException {
             try {
-                return super.available();
+                return in.available();
             } catch (IOException e) {
-                exceptionClose(e);
+                exceptionClose(in, e);
                 throw new UncheckedIOException(e);
             }
         }
-        
+
         @Override
         public void close() throws UncheckedIOException {
             try {
-                super.close();
+                in.close();
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
             }
@@ -88,77 +86,53 @@ public class FileIO
     }
 
 
-    public static class Output extends FileOutputStream
+    public static class Output extends FilterOutputStream
     {
-        public Output(String name) throws FileNotFoundException {
-            super(name);
+        public Output(OutputStream out) {
+            super(out);
         }
-        
-        public Output(String name, boolean append) throws FileNotFoundException {
-            super(name, append);
-        }
-        
-        public Output(File file) throws FileNotFoundException {
-            super(file);
-        }
-        
-        public Output(File file, boolean append) throws FileNotFoundException {
-            super(file, append);
-        }
-        
-        public Output(FileDescriptor fdObj) {
-            super(fdObj);
-        }
-        
-        
-        private void exceptionClose(Throwable e) {
-            try {
-                super.close();
-            } catch (Throwable ex) {
-                e.addSuppressed(ex);
-            }
-        }
-        
+
+
         @Override
         public void write(int b) throws UncheckedIOException {
             try {
-                super.write(b);
+                out.write(b);
             } catch (IOException e) {
-                exceptionClose(e);
+                exceptionClose(out, e);
                 throw new UncheckedIOException(e);
             }
         }
-        
+
         @Override
         public void write(byte[] b) throws UncheckedIOException {
             try {
-                super.write(b);
+                out.write(b);
             } catch (IOException e) {
-                exceptionClose(e);
+                exceptionClose(out, e);
                 throw new UncheckedIOException(e);
             }
         }
-        
+
         @Override
         public void write(byte[] b, int off, int len) throws UncheckedIOException {
             try {
-                super.write(b, off, len);
+                out.write(b, off, len);
             } catch (IOException e) {
-                exceptionClose(e);
+                exceptionClose(out, e);
                 throw new UncheckedIOException(e);
             }
         }
-        
+
         @Override
         public void flush() throws UncheckedIOException {
             try {
-                super.flush();
+                out.flush();
             } catch (IOException e) {
-                exceptionClose(e);
+                exceptionClose(out, e);
                 throw new UncheckedIOException(e);
             }
         }
-        
+
         @Override
         public void close() throws UncheckedIOException {
             try {
@@ -172,7 +146,8 @@ public class FileIO
 
     public static Input input(String name) {
         try {
-            return new Input(name);
+            InputStream in = new FileInputStream(name);
+            return new Input(in);
         } catch (FileNotFoundException e) {
             throw new UncheckedIOException(e);
         }
@@ -180,23 +155,21 @@ public class FileIO
 
     public static Input input(File file) {
         try {
-            return new Input(file);
+            InputStream in = new FileInputStream(file);
+            return new Input(in);
         } catch (FileNotFoundException e) {
             throw new UncheckedIOException(e);
         }
     }
 
-    public static Input input(FileInputStream fis) {
-        try {
-            return new Input(fis.getFD());
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
+    public static Input input(InputStream in) {
+        return new Input(in);
     }
 
     public static Output output(String name) {
         try {
-            return new Output(name);
+            OutputStream out = new FileOutputStream(name);
+            return new Output(out);
         } catch (FileNotFoundException e) {
             throw new UncheckedIOException(e);
         }
@@ -204,7 +177,8 @@ public class FileIO
 
     public static Output output(String name, boolean append) {
         try {
-            return new Output(name, append);
+            OutputStream out = new FileOutputStream(name, append);
+            return new Output(out);
         } catch (FileNotFoundException e) {
             throw new UncheckedIOException(e);
         }
@@ -212,7 +186,8 @@ public class FileIO
 
     public static Output output(File file) {
         try {
-            return new Output(file);
+            OutputStream out = new FileOutputStream(file);
+            return new Output(out);
         } catch (FileNotFoundException e) {
             throw new UncheckedIOException(e);
         }
@@ -220,18 +195,15 @@ public class FileIO
 
     public static Output output(File file, boolean append) {
         try {
-            return new Output(file, append);
+            OutputStream out = new FileOutputStream(file, append);
+            return new Output(out);
         } catch (FileNotFoundException e) {
             throw new UncheckedIOException(e);
         }
     }
 
-    public static Output output(FileOutputStream fos) {
-        try {
-            return new Output(fos.getFD());
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
+    public static Output output(OutputStream out) {
+        return new Output(out);
     }
 
     public static byte[] readAllBytes(String path) {
@@ -239,13 +211,10 @@ public class FileIO
     }
 
     public static byte[] readAllBytes(File file) {
-        Input in = input(file);
         try {
-            byte[] bytes = new byte[in.available()];
-            in.read(bytes);
-            return bytes;
-        } finally {
-            in.close();
+            return Files.readAllBytes(file.toPath());
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
         }
     }
 

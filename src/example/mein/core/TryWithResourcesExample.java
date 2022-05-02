@@ -1,55 +1,47 @@
-package mein.example.mein.core;
+package example.mein.core;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.function.Consumer;
-import mein.core.ExtRunnable;
-import mein.core.Try_With_Resources;
 
-public class $Try_With_Resources
+import mein.core.ExtRunnable;
+import mein.core.TryWithResources;
+
+/* 
+ * 2022-05-02  10:21  GMT+8
+ */
+
+public class TryWithResourcesExample
 {
-    static class TestResourceInputStream extends InputStream
+    static class TestResourceInputStream extends FilterInputStream
     {
-        private int index;
-        private byte[] src;
         private boolean throwException;
         private boolean closed;
-        
+
         TestResourceInputStream(byte[] src, boolean throwException) {
-            this.src = src;
+            super(new ByteArrayInputStream(src));
             this.throwException = throwException;
         }
 
-        @Override
-        public int available() {
-            return src.length - index;
-        }
 
         @Override
         public int read() throws IOException {
             if (throwException)
                 throw new IOException();
-            
-            try {
-                return src[index++];
-            } catch (ArrayIndexOutOfBoundsException e) {
-                return -1;
-            }
+
+            return in.read();
         }
 
         @Override
         public int read(byte[] b, int off, int len) throws IOException {
-            int available;
-            
-            if (throwException) throw new IOException();
-            if ((available = available()) == 0) return -1;
-            
-            len = Math.min(len, available);
-            System.arraycopy(src, index, b, off, len);
-            index += len;
-            return len;
+            if (throwException)
+                throw new IOException();
+
+            return in.read(b, off, len);
         }
 
         @Override
@@ -71,7 +63,7 @@ public class $Try_With_Resources
         );
         OutputStream out = new ByteArrayOutputStream();
         try {
-            new $Try_With_Resources().example(in, out);
+            new TryWithResourcesExample().example(in, out);
         } catch (Exception e) {
             System.out.println("is closed: " + in.isClosed());
             e.printStackTrace();
@@ -81,7 +73,7 @@ public class $Try_With_Resources
 
     void example(final InputStream in, final OutputStream out) {
 
-        Try_With_Resources.of(in, out).try_(new ExtRunnable() {
+        TryWithResources.of(in, out).try_(new ExtRunnable() {
             @Override public void runn() throws IOException {
                 byte[] buffer = new byte[1];
                 int total;
@@ -96,7 +88,7 @@ public class $Try_With_Resources
 
     void example2(final InputStream in, final OutputStream out) {
 
-        Try_With_Resources.of(in, out).try_(new ExtRunnable() {
+        TryWithResources.of(in, out).try_(new ExtRunnable() {
             @Override public void runn() throws IOException {
                 byte[] buffer = new byte[1];
                 int total;

@@ -9,11 +9,11 @@ import mein.util.Exceptions;
 
 /* 
  * Created on 2022-03-04
- * last modified  2022-04-19  22:42  GMT+8
+ * last modified  2022-05-02  10:04  GMT+8
  * @author Exception20
  */
 
-public class Try_With_Resources
+public class TryWithResources
 {
     private final AutoCloseable[] resources;
 
@@ -24,13 +24,13 @@ public class Try_With_Resources
     private Runnable _finally;
 
 
-    private Try_With_Resources(AutoCloseable[] resources) {
+    private TryWithResources(AutoCloseable[] resources) {
         this.resources = resources;
     }
 
 
-    public static Try_With_Resources of(AutoCloseable... resources) {
-        return new Try_With_Resources(resources);
+    public static TryWithResources of(AutoCloseable... resources) {
+        return new TryWithResources(resources);
     }
 
 
@@ -45,7 +45,7 @@ public class Try_With_Resources
     }
 
 
-    public Try_With_Resources try_(ExtRunnable _try) {
+    public TryWithResources try_(ExtRunnable _try) {
         if (_try == null)
             closeDueToNPE(new NullPointerException());
         
@@ -54,7 +54,7 @@ public class Try_With_Resources
     }
 
 
-    public Try_With_Resources try_(final Runnable _try) {
+    public TryWithResources try_(final Runnable _try) {
         if (_try == null)
             closeDueToNPE(new NullPointerException());
         
@@ -67,7 +67,7 @@ public class Try_With_Resources
     }
 
 
-    public Try_With_Resources catch_(Consumer<? super Exception> exceptionHandler) {
+    public TryWithResources catch_(Consumer<? super Exception> exceptionHandler) {
         if (exceptionHandler == null)
             closeDueToNPE(new NullPointerException("exceptionHandler == null"));
         
@@ -76,7 +76,7 @@ public class Try_With_Resources
     }
 
 
-    public <E extends Throwable> Try_With_Resources catch_(Class<E> exClass, Consumer<? super E> exceptionHandler) {
+    public <E extends Throwable> TryWithResources catch_(Class<E> exClass, Consumer<? super E> exceptionHandler) {
         if (exClass == null)
             closeDueToNPE(new NullPointerException("exClass == null"));
         
@@ -88,7 +88,7 @@ public class Try_With_Resources
     }
 
 
-    public Try_With_Resources finally_(Runnable _finally) {
+    public TryWithResources finally_(Runnable _finally) {
         if (_finally == null)
             closeDueToNPE(new NullPointerException());
         
