@@ -13,7 +13,7 @@ import mein.core.Cleaner;
 import mein.core.Config;
 
 /* 
- * 2022-05-17  19:07  GMT+8
+ * 2022-05-17  22:10  GMT+8
  */
 
 public class CleanerTest
@@ -75,8 +75,11 @@ public class CleanerTest
             String name = "output_" + System.currentTimeMillis();
             File file = new File(tempFileDir, name);
             try {
-                FileOutputStream fos = new FileOutputStream(file);
-                return new BufferedOutputStream(fos, bufferSize);
+                OutputStream out = new FileOutputStream(file);
+                if (bufferSize > Byte.MAX_VALUE) {
+                    out = new BufferedOutputStream(out, bufferSize);
+                }
+                return out;
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
             }
@@ -87,7 +90,7 @@ public class CleanerTest
     //* static */ public static final Cleaner cleaner = Cleaner.create();
     public static void main(String[] args) {
         Cleaner cleaner = Cleaner.create();
-        observeration(cleaner);
+        observation(cleaner);
         byte[] bytes = new byte[1024*1024];
         final ByteBuffer bbuf = ByteBuffer.wrap(bytes);
         new Random().longs(bytes.length>>3).forEach(new LongConsumer() {
@@ -102,48 +105,51 @@ public class CleanerTest
     }
 
 
-    private static void observeration(Cleaner cleaner) {
+    private static void observation(Cleaner cleaner) {
+        // ReferenceQueue
         final Object queue = Access.get(Access.getField(cleaner.getClass(), "queue"), cleaner);
+        // ReferenceQueue.lock
         final Object lock = Access.get(Access.getField(queue.getClass(), "lock"), queue);
+        // Cleaner.CCLinkedList
         final Object list = Access.get(Access.getField(cleaner.getClass(), "list"), cleaner);
+        // CCLinkedList.size
         final Field size = Access.getField(list.getClass(), "size");
-        Thread observerThread = new Thread(new Runnable() {
-            public void run() {
-                synchronized (lock) {
-                    int listSize = Integer.MAX_VALUE;
-                    while (listSize > 0) {
-                        listSize = Access.get(size, list);
-                        System.out.println("size: " + listSize);
-                        try { lock.wait(1000L); }
-                        catch (InterruptedException e) {
-                            System.out.println("Interrupted");
-                            return;
-                        }
+        new Thread(new Runnable() { public void run() {
+            synchronized (lock) {
+                int listSize = Integer.MAX_VALUE;
+                while (listSize > 0) {
+                    listSize = Access.get(size, list);
+                    System.out.println("size: " + listSize);
+                    try { lock.wait(1000L); }
+                    catch (InterruptedException e) {
+                        System.out.println("Interrupted");
+                        return;
                     }
                 }
-                System.out.println("ObserverThread end");
             }
-        });
-        observerThread.start();
+            System.out.println("ObserverThread end");
+        }}).start();
     }
 
 
     private static class Access {
         private static Field getField(Class clazz, String name) {
             try {
-                return clazz.getDeclaredField(name);
+                Field field = clazz.getDeclaredField(name);
+                field.setAccessible(true);
+                return field;
             } catch (NoSuchFieldException e) {
+                e.printStackTrace();
                 return null;
             }
         }
         private static Object get(Field field, Object object) {
-            field.setAccessible(true);
             try {
                 return field.get(object);
             } catch (ReflectiveOperationException e) {
                 e.printStackTrace();
+                return null;
             }
-            return null;
         }
     }
 }
